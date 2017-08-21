@@ -1,8 +1,13 @@
-# JoinTheDarkSide
-Just a repository for noobs who want to join the dark side.
+# BASAHIN NIYO TALAGA TO.
+Need iyo i-setup ng maayos yung BoilerPlate (API branch) na makukuha sa https://github.com/PUP-CCIS ! Papahirapan niyo lang sarili niyo kung d niyo yan gagamitin. Also angery theme ng app, wag bida bida.
+
+http://imgur.com/bMef45q <- BUKSAN NIYO YAN. GANYAN GINAWA KO.
+
+In my separate copy, the App Adds and Edits kaso yung toggle/switch hindi na pu-push sa database. Login/Authentication, Sharing ng Todos sa ibang users, at DELETE ang wala pa.
 
 # Database Guide
 Follow this STRICTLY so we can avoid compatibility issues. Use the '.env' guide posted by our professor for settings.
+Kaso bahala na kayo kung talagang susundin niyo ito. Recommended ko lang para matino tignan.
 When setting up the tables, use the name 'Todos', for the Todos, and the name 'Users' for User Authentication purposes.
 
 'Todos' Table's fields:
