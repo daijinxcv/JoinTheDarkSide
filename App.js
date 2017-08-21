@@ -1,39 +1,152 @@
-import React, { Component } from 'react';
-import { Switch, ToastAndroid, StyleSheet, Text, FlatList, ListView, View, AppRegistry, Image, TextInput, Button } from 'react-native';
+import React from 'react';
+import { FlatList, Modal, StyleSheet, ToastAndroid, View, Image } from 'react-native';
+import {
+  Button,
+  FormInput,
+  FormLabel,
+  Header,
+  Icon,
+  List,
+  ListItem,
+  Text
+} from 'react-native-elements';
+import axios from 'axios';
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor(props, ctx) {
+    super(props, ctx);
+
+    this.editTodo = this.editTodo.bind(this);
+    this.getTodos = this.getTodos.bind(this);
+    this.handlePressAdd = this.handlePressAdd.bind(this);
+    this.handlePressEdit = this.handlePressEdit.bind(this);
+    this.renderRow = this.renderRow.bind(this);
+    this.toggleSwitch = this.toggleSwitch.bind(this);
+
     this.state = {
-      title: '',
-      description: '',
-      arri: titleArray = [],
-      value: false,
+      descriptionInput: '',
+      modalVisible: false,
+      refreshing: false,
+      titleInput: '',
+      editId: null,
+      mode: 'add',
+      todoItems: []
     };
   }
 
-  addToList(passedTitle, passedDescription, passedArray) {
+  componentDidMount() {
+    this.getTodos();
+  }
 
-    if (passedTitle != '' && passedDescription != '') {
-      var len = passedArray.length + 1;
-      passedArray.push({ key: len, title: passedTitle, description: passedDescription, check: false, che: 'none' });
-      passedArray.concat([{
-        key: len,
-        title: passedTitle,
-        description: passedDescription,
-        check: false
-      }]);
-      passedArray = passedArray.concat();
-      this.setState({
-        arri: passedArray,
-        title: '',
-        description: '',
-        value: false,
-        che: 'none',
+  getTodos() {
+    this.setState({ refreshing: true });
+
+    return axios.get('http://192.168.1.6:3009/api/todos')
+      .then(response => {
+        const todos = response.data;
+
+        this.setState({
+          refreshing: false,
+          todoItems: todos.map(function (todo) {
+            return {
+              id: todo.id,
+              title: todo.title,
+              description: todo.description,
+              switched: !!todo.done
+            };
+          })
+        });
+      })
+      .catch(err => {
+        this.setState({ refreshing: false });
+        ToastAndroid.show(err.toString(), ToastAndroid.SHORT);
       });
-    } else {
-      ToastAndroid.show("Aww. You need to type something. :(", ToastAndroid.SHORT);
-    }
+  }
+
+  handlePressEdit() {
+    axios.put(`http://192.168.1.6:3009/api/todos/${this.state.editId}`, {
+      title: this.state.titleInput,
+      description: this.state.descriptionInput
+    })
+      .then(response => {
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+
+        this.setState({
+          descriptionInput: '',
+          modalVisible: false,
+          titleInput: '',
+          editId: null,
+          mode: 'add'
+        }, () => {
+          this.getTodos();
+        });
+      });
+  }
+
+  handlePressAdd() {
+    const todoItems = this.state.todoItems.concat();
+    const payload = {
+      title: this.state.titleInput,
+      description: this.state.descriptionInput
+    };
+
+    axios.post('http://192.168.1.6:3009/api/todos', payload)
+      .then(response => {
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+
+        this.setState({
+          descriptionInput: '',
+          modalVisible: false,
+          titleInput: ''
+        })
+      })
+      .catch(err => ToastAndroid.show(err.response.data.error, ToastAndroid.LONG))
+      .then(this.getTodos);
+  }
+
+  toggleSwitch(index) {
+    const { todoItems } = this.state;
+    const todoItem = todoItems[index];
+
+    this.setState({
+      todoItems: [
+        ...todoItems.slice(0, index),
+        {
+          ...todoItem,
+          switched: !todoItem.switched
+        },
+        ...todoItems.slice(index + 1)
+      ]
+    });
+  }
+
+  editTodo(index) {
+    const todo = this.state.todoItems[index];
+
+    this.setState({
+      modalVisible: true,
+      titleInput: todo.title,
+      descriptionInput: todo.description,
+      mode: 'edit',
+      editId: todo.id
+    });
+  }
+
+  renderRow({ item, index }) {
+    return (
+      <ListItem
+        style={{ backgroundColor: item.switched ? '#009C6B' : 'white' }}
+        hideChevron={true}
+        onPress={this.editTodo.bind(null, index)}
+        onSwitch={this.toggleSwitch.bind(null, index)}
+        subtitle={item.description}
+        subtitleStyle={{ color: item.switched ? 'white' : '#a3a3a3' }}
+        switched={item.switched}
+        switchButton={true}
+        title={item.title}
+        titleStyle={{ color: item.switched ? 'white' : '#000000' }}
+      />
+    );
   }
 
   render() {
@@ -42,64 +155,41 @@ export default class App extends React.Component {
       uri: 'https://ih0.redbubble.net/image.265187439.2542/flat,800x800,070,f.u2.jpg'
     };
 
-    //var che = this.state.value ? 'line-through' : 'none';
-
     return (
-      <View style={styles.mainStyle}>
+      <View>
         <Image source={bgImg} style={{ width: 400, height: 120, alignSelf: 'center' }} />
-        <Text style={styles.centered}>Todo-list app using React Native!</Text>
-        <View>
-          <Text style={{ marginTop: 20 }}>Current Todo-list(s):</Text>
+        <Modal
+          animationType="slide"
+          onRequestClose={() => this.setState({ modalVisible: false, mode: 'add' })}
+          transparent={false}
+          visible={this.state.modalVisible}>
+          <View>
+            <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
+            <Text h4 style={{ textAlign: 'center' }}>{this.state.mode === 'add' ? 'Magdagdag ng Gagawin' : 'I-edit ang Gagawin'}</Text>
+            <FormLabel>Pamagat</FormLabel>
+            <FormInput onChangeText={text => this.setState({ titleInput: text })} value={this.state.titleInput} />
+            <FormLabel>Paglalarawan</FormLabel>
+            <FormInput onChangeText={text => this.setState({ descriptionInput: text })} value={this.state.descriptionInput} />
+            <Button onPress={this.state.mode === 'add' ? this.handlePressAdd : this.handlePressEdit} title={this.state.mode === 'add' ? 'Idagdag' : 'I-save ang binago'} buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
+            <Button onPress={() => this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '' })} title="Isara" />
+          </View>
+        </Modal>
 
+        <Header
+          leftComponent={{ icon: 'menu' }}
+          centerComponent={{ text: 'Listahan ng Gagawin' }}
+          rightComponent={{ icon: 'add', onPress: () => this.setState({ modalVisible: true }) }}
+        />
+        <List containerStyle={{ marginTop: 70 }}>
           <FlatList
-            data={this.state.arri}
-            renderItem={
-              ({ item }) => <View>
-                <Switch
-                  onValueChange={(val) => {
-                    this.setState({
-                      arri: this.state.arri.concat(),
-                    });
-                    item.check = val;
-                    item.che = val ? 'line-through' : 'none';
-                  }}
-                  value={item.check}
-                />
-                <Text style={{ textDecorationLine: item.che }}>{item.key}: {item.title} - {item.description}</Text>
-              </View>
-            }
+            data={this.state.todoItems}
+            keyExtractor={item => item.id}
+            onRefresh={this.getTodos}
+            refreshing={this.state.refreshing}
+            renderItem={this.renderRow}
           />
-
-        </View>
-        <View style={{ marginTop: 10, borderTopWidth: 1 }}>
-          <Text style={{ alignSelf: 'center' }} >Add a new task</Text>
-          <Text>Title:</Text>
-          <TextInput value={this.state.title} style={styles.inputField} placeholder="Type the title for your to-do here." onChangeText={(title) => this.setState({ title })} />
-          <Text>Description:</Text>
-          <TextInput value={this.state.description} style={styles.inputField} placeholder="Type the description for your to-do here." onChangeText={(description) => this.setState({ description })} />
-          <Button onPress={(e) => this.addToList(this.state.title, this.state.description, this.state.arri)} title="Add" color="#841584" accessibilityLabel="This button will add the title and description from the input fields above to the list above." />
-        </View>
+        </List>
       </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-
-  mainStyle: {
-    //backgroundColor: '#ffc76a',
-  },
-  listDesign: {
-    //flex: 1,
-    marginTop: 20,
-  },
-
-  centered: {
-    alignSelf: 'center',
-  },
-
-  inputField: {
-    height: 50,
-  },
-}
-);

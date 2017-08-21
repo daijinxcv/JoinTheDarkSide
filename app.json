@@ -1,23 +1,7 @@
 {
   "expo": {
-    "name": "jointhedarkside",
-    "description": "An empty new project",
-    "slug": "jointhedarkside",
-    "privacy": "public",
-    "sdkVersion": "19.0.0",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "primaryColor": "#cccccc",
-    "icon": "./assets/icons/app-icon.png",
-    "loading": {
-      "icon": "./assets/icons/loading-icon.png",
-      "hideExponentText": false
-    },
-    "packagerOpts": {
-      "assetExts": ["ttf", "mp4"]
-    },
-    "ios": {
-      "supportsTablet": true
-    }
+    "sdkVersion": "18.0.0",
+    "icon": "http://www.emoji.co.uk/files/microsoft-emojis/smileys-people-windows10/9924-angry-face.png",
+    "name": "To-do List Junkie"
   }
 }
