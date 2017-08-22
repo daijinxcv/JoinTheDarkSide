@@ -1,5 +1,10 @@
+# MGA HINDI PA GINAGAWA NI MENARD.
+1. Yung <b>SWITCH</b> dapat every toggle magu-update yung nasa database na <b>"done"</b>.
+2. <b>DELETE</b>, wala pa talaga niyan.
+3. Kapag nag-edit ka at nag-update, hindi nasasama yung sa switch. Fix that.
+
 # BASAHIN NIYO TALAGA TO.
-Need iyo i-setup ng maayos yung BoilerPlate (API branch) na makukuha sa https://github.com/PUP-CCIS ! Papahirapan niyo lang sarili niyo kung d niyo yan gagamitin. Also angery theme ng app, wag bida bida.
+Need iyo i-setup ng maayos yung BoilerPlate (API branch) na makukuha sa https://github.com/PUP-CCIS ! Papahirapan niyo lang sarili niyo kung d niyo yan gagamitin. Also angery theme ng app, wag bida bida. Tignan niyo api.js sa boilerplate-api.
 
 http://imgur.com/bMef45q <- BUKSAN NIYO YAN. GANYAN GINAWA KO.
 
