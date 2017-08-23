@@ -26,6 +26,10 @@ export default class App extends React.Component {
     this.state = {
       descriptionInput: '',
       modalVisible: false,
+      loginVisible: true,
+      username: '',
+      password: '',
+      email: '',
       refreshing: false,
       titleInput: '',
       editId: null,
@@ -41,7 +45,7 @@ export default class App extends React.Component {
   getTodos() {
     this.setState({ refreshing: true });
 
-    return axios.get('http://192.168.1.6:3009/api/todos')
+    return axios.get('http://192.168.1.4:3009/api/todos/')
       .then(response => {
         const todos = response.data;
 
@@ -64,12 +68,16 @@ export default class App extends React.Component {
   }
 
   handlePressEdit() {
-    axios.put(`http://192.168.1.6:3009/api/todos/${this.state.editId}`, {
+    const { todoItems } = this.state;
+    const todoItem = todoItems[this.state.editId];
+
+    axios.put(`http://192.168.1.4:3009/api/todos/${this.state.editId}`, {
       title: this.state.titleInput,
-      description: this.state.descriptionInput
+      description: this.state.descriptionInput,
+      done: !!todoItem.switched
     })
       .then(response => {
-        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+        ToastAndroid.show(response.data.message + ": " + this.state.title + " - " + this.state.description + " - " + !todoItem.switched.toString(), ToastAndroid.SHORT);
 
         this.setState({
           descriptionInput: '',
@@ -87,10 +95,11 @@ export default class App extends React.Component {
     const todoItems = this.state.todoItems.concat();
     const payload = {
       title: this.state.titleInput,
-      description: this.state.descriptionInput
+      description: this.state.descriptionInput,
+      done: this.state.switched
     };
 
-    axios.post('http://192.168.1.6:3009/api/todos', payload)
+    axios.post('http://192.168.1.4:3009/api/todos/', payload)
       .then(response => {
         ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
@@ -107,6 +116,26 @@ export default class App extends React.Component {
   toggleSwitch(index) {
     const { todoItems } = this.state;
     const todoItem = todoItems[index];
+
+
+    axios.put(`http://192.168.1.4:3009/api/todos/${todoItem.id}`, {
+      title: todoItem.title,
+      description: todoItem.description,
+      done: !todoItem.switched
+    })
+      .then(response => {
+        ToastAndroid.show(response.data.message + ": " + todoItem.title + " - " + todoItem.description + " - " + !todoItem.switched.toString(), ToastAndroid.SHORT);
+
+        this.setState({
+          descriptionInput: '',
+          modalVisible: false,
+          titleInput: '',
+          editId: null,
+          mode: 'add'
+        }, () => {
+          this.getTodos();
+        });
+      });
 
     this.setState({
       todoItems: [
@@ -171,12 +200,29 @@ export default class App extends React.Component {
             <FormLabel>Paglalarawan</FormLabel>
             <FormInput onChangeText={text => this.setState({ descriptionInput: text })} value={this.state.descriptionInput} />
             <Button onPress={this.state.mode === 'add' ? this.handlePressAdd : this.handlePressEdit} title={this.state.mode === 'add' ? 'Idagdag' : 'I-save ang binago'} buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
-            <Button onPress={() => this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '' })} title="Isara" />
+            <Button onPress={() => this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '' })} title={this.state.mode === 'add' ? 'Isara' : 'I-delete'} />
+          </View>
+        </Modal>
+
+        <Modal
+          animationType="slide"
+          onRequestClose={() => this.setState({ loginVisible: false })}
+          transparent={false}
+          visible={this.state.loginVisible}>
+          <View>
+            <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
+            <Text h4 style={{ textAlign: 'center' }}>{'Welcome to Junkie To-do List App!'}</Text>
+            <FormLabel>Email Address:</FormLabel>
+            <FormInput onChangeText={text => this.setState({ email: text })} value={this.state.email} />
+            <FormLabel>Password</FormLabel>
+            <FormInput onChangeText={text => this.setState({ password: text })} value={this.state.password} />
+            <Button onPress={() => this.setState({ loginVisible: false })} title="Login" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
+            <Button onPress={() => this.setState({ loginVisible: false })} title="Register" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
           </View>
         </Modal>
 
         <Header
-          leftComponent={{ icon: 'menu' }}
+          leftComponent={{ icon: 'menu', onPress: () => this.setState({ loginVisible: true }) }}
           centerComponent={{ text: 'Listahan ng Gagawin' }}
           rightComponent={{ icon: 'add', onPress: () => this.setState({ modalVisible: true }) }}
         />
