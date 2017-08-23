@@ -1,5 +1,10 @@
+# MGA HINDI PA GINAGAWA NI MENARD.
+1. <b>DELETE</b>, wala pa talaga niyan.
+2. <b>LOGIN/REGISTER</b>, may UI na, code na lang.
+3. <b>SHARING NG TODOS</b>, db is ready, code na lang.
+
 # BASAHIN NIYO TALAGA TO.
-Need iyo i-setup ng maayos yung BoilerPlate (API branch) na makukuha sa https://github.com/PUP-CCIS ! Papahirapan niyo lang sarili niyo kung d niyo yan gagamitin. Also angery theme ng app, wag bida bida.
+Need iyo i-setup ng maayos yung BoilerPlate (API branch) na makukuha sa https://github.com/PUP-CCIS ! Papahirapan niyo lang sarili niyo kung d niyo yan gagamitin. Also angery theme ng app, wag bida bida. Tignan niyo api.js sa boilerplate-api.
 
 http://imgur.com/bMef45q <- BUKSAN NIYO YAN. GANYAN GINAWA KO.
 
