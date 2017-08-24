@@ -20,6 +20,8 @@ export default class App extends React.Component {
     this.getTodos = this.getTodos.bind(this);
     this.handlePressAdd = this.handlePressAdd.bind(this);
     this.handlePressEdit = this.handlePressEdit.bind(this);
+    this.handlePressDelete = this.handlePressDelete.bind(this);
+    this.closeModalView = this.closeModalView.bind(this);
     this.renderRow = this.renderRow.bind(this);
     this.toggleSwitch = this.toggleSwitch.bind(this);
 
@@ -27,6 +29,7 @@ export default class App extends React.Component {
       descriptionInput: '',
       modalVisible: false,
       loginVisible: true,
+      modeVisible: false,
       username: '',
       password: '',
       email: '',
@@ -69,15 +72,41 @@ export default class App extends React.Component {
 
   handlePressEdit() {
     const { todoItems } = this.state;
-    const todoItem = todoItems[this.state.editId];
+    const todoItem = todoItems[this.state.index];
 
-    axios.put(`http://192.168.1.4:3009/api/todos/${this.state.editId}`, {
+    ToastAndroid.show(todoItem.title + " " + todoItem.description + " " + todoItem.id + " " + todoItem.done, ToastAndroid.SHORT);
+
+    axios.put(`http://192.168.1.4:3009/api/todos/${todoItem.id}`, {
       title: this.state.titleInput,
+      //title: todoItem.title,
       description: this.state.descriptionInput,
-      done: !!todoItem.switched
+      //description: todoItem.description,
+      done: !!todoItems.switched
     })
       .then(response => {
-        ToastAndroid.show(response.data.message + ": " + this.state.title + " - " + this.state.description + " - " + !todoItem.switched.toString(), ToastAndroid.SHORT);
+        ToastAndroid.show(response.data.message + ": " + this.state.titleInput + " - " + this.state.editId + " - " + this.state.descriptionInput + " - " + this.state.editId + " - " + !todoItem.switched, ToastAndroid.SHORT);
+
+        this.setState({
+          descriptionInput: '',
+          modalVisible: false,
+          titleInput: '',
+          editId: null,
+          mode: 'add'
+        }, () => {
+          this.getTodos();
+        });
+      });
+  }
+
+  handlePressDelete() {
+    const { todoItems } = this.state;
+    const todoItem = todoItems[this.state.editId];
+
+    axios.post(`http://192.168.1.4:3009/api/todos/${this.state.editId}`, {
+      id: this.state.editId
+    })
+      .then(response => {
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
         this.setState({
           descriptionInput: '',
@@ -124,7 +153,7 @@ export default class App extends React.Component {
       done: !todoItem.switched
     })
       .then(response => {
-        ToastAndroid.show(response.data.message + ": " + todoItem.title + " - " + todoItem.description + " - " + !todoItem.switched.toString(), ToastAndroid.SHORT);
+        ToastAndroid.show(response.data.message + ": " + todoItem.title + " - " + todoItem.description + " - " + todoItem.id + " - " + !todoItem.switched, ToastAndroid.SHORT);
 
         this.setState({
           descriptionInput: '',
@@ -151,14 +180,16 @@ export default class App extends React.Component {
 
   editTodo(index) {
     const todo = this.state.todoItems[index];
-
+    ToastAndroid.show(index.toString(), ToastAndroid.SHORT);
     this.setState({
       modalVisible: true,
       titleInput: todo.title,
       descriptionInput: todo.description,
       mode: 'edit',
-      editId: todo.id
+      editId: todo.id,
+      index: index
     });
+    ToastAndroid.show(todo.id.toString(), ToastAndroid.SHORT);
   }
 
   renderRow({ item, index }) {
@@ -178,6 +209,10 @@ export default class App extends React.Component {
     );
   }
 
+  closeModalView() {
+    this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '' });
+  }
+
   render() {
 
     var bgImg = {
@@ -187,6 +222,7 @@ export default class App extends React.Component {
     return (
       <View>
         <Image source={bgImg} style={{ width: 400, height: 120, alignSelf: 'center' }} />
+
         <Modal
           animationType="slide"
           onRequestClose={() => this.setState({ modalVisible: false, mode: 'add' })}
@@ -200,7 +236,7 @@ export default class App extends React.Component {
             <FormLabel>Paglalarawan</FormLabel>
             <FormInput onChangeText={text => this.setState({ descriptionInput: text })} value={this.state.descriptionInput} />
             <Button onPress={this.state.mode === 'add' ? this.handlePressAdd : this.handlePressEdit} title={this.state.mode === 'add' ? 'Idagdag' : 'I-save ang binago'} buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
-            <Button onPress={() => this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '' })} title={this.state.mode === 'add' ? 'Isara' : 'I-delete'} />
+            <Button onPress={this.state.mode === 'add' ? this.closeModalView : this.handlePressDelete} title={this.state.mode === 'add' ? 'Isara' : 'I-delete'} buttonStyle={{ marginBottom: 5 }} backgroundColor={this.state.mode === 'add' ? 'gray' : 'red'} />
           </View>
         </Modal>
 
@@ -221,12 +257,29 @@ export default class App extends React.Component {
           </View>
         </Modal>
 
+        <Modal
+          animationType="fade"
+          onRequestClose={() => this.setState({ modeVisible: false })}
+          transparent={false}
+          visible={this.state.modeVisible}>
+          <View>
+            <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
+            <Text style={{ textAlign: 'center' }}>{'Magpalit ng nakikitang mga Gawain'}</Text>
+            <FormLabel>Pamagat</FormLabel>
+            <FormInput onChangeText={text => this.setState({ titleInput: text })} value={this.state.titleInput} />
+            <FormLabel>Paglalarawan</FormLabel>
+            <FormInput onChangeText={text => this.setState({ descriptionInput: text })} value={this.state.descriptionInput} />
+            <Button onPress={} buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
+            <Button onPress={() => this.setState({ modeVisible: false })} title='Isara' buttonStyle={{ marginBottom: 5 }} backgroundColor='blue' />
+          </View>
+        </Modal>
+
         <Header
-          leftComponent={{ icon: 'menu', onPress: () => this.setState({ loginVisible: true }) }}
+          leftComponent={{ icon: 'menu', onPress: () => this.setState({ modeVisible: true }) }}
           centerComponent={{ text: 'Listahan ng Gagawin' }}
           rightComponent={{ icon: 'add', onPress: () => this.setState({ modalVisible: true }) }}
         />
-        <List containerStyle={{ marginTop: 70 }}>
+        <List containerStyle={{ marginTop: 50 }}>
           <FlatList
             data={this.state.todoItems}
             keyExtractor={item => item.id}
