@@ -25,12 +25,14 @@ export default class App extends React.Component {
     this.renderRow = this.renderRow.bind(this);
     this.toggleSwitch = this.toggleSwitch.bind(this);
     this.handlePressRegister = this.handlePressRegister.bind(this);
+    this.handlePressLogin = this.handlePressLogin.bind(this);
 
     this.state = {
       descriptionInput: '',
       modalVisible: false,
       loginVisible: true,
       modeVisible: false,
+      aboutVisible: false,
       username: '',
       password: '',
       email: '',
@@ -50,7 +52,7 @@ export default class App extends React.Component {
   getTodos() {
     this.setState({ refreshing: true });
 
-    return axios.get('http://192.168.43.117:3009/api/todos/')
+    return axios.get('http://192.168.1.5:3009/api/todos/')
       .then(response => {
         const todos = response.data;
 
@@ -75,7 +77,7 @@ export default class App extends React.Component {
   getUsers() {
     ToastAndroid.show('Fetching masterlist...', ToastAndroid.SHORT);
 
-    return axios.get('http://192.168.43.117:3009/api/accounts/')
+    return axios.get('http://192.168.1.5:3009/api/accounts/')
       .then(response => {
         const useracc = response.data;
 
@@ -95,6 +97,42 @@ export default class App extends React.Component {
       });
   }
 
+  handlePressLogin() {
+    username = this.state.username;
+    password = this.state.password;
+
+    if (username !== '' && password !== '') {
+      this.getUsers();
+
+      for (var index = 0; index < this.state.users.length; index++) {
+        var element = this.state.users[index];
+
+        if (username === element.username) {
+          if (password === element.password) {
+            ToastAndroid.show('Logging you in...', ToastAndroid.SHORT);
+
+            this.setState({
+              loginVisible: false,
+              modalVisible: false,
+              users: [],
+            });
+
+            this.getTodos();
+
+            break;
+          }
+        }
+
+        if (index === this.state.users.length - 1) {
+          ToastAndroid.show('No such account exists!', ToastAndroid.SHORT);
+        }
+      }
+
+    } else {
+      ToastAndroid.show('You must type something to log in.', ToastAndroid.SHORT);
+    }
+  }
+
   handlePressRegister() {
     username = this.state.username;
     password = this.state.password;
@@ -109,7 +147,7 @@ export default class App extends React.Component {
           ToastAndroid.show('This username already exists!', ToastAndroid.SHORT);
           break;
         } else {
-          axios.post(`http://192.168.43.117:3009/api/accounts/`, {
+          axios.post(`http://192.168.1.5:3009/api/accounts/`, {
             username: this.state.username,
             password: this.state.password
           })
@@ -139,7 +177,7 @@ export default class App extends React.Component {
 
     ToastAndroid.show(todoItem.title + " " + todoItem.description + " " + todoItem.id + " " + todoItem.done, ToastAndroid.SHORT);
 
-    axios.put(`http://192.168.43.117:3009/api/todos/${todoItem.id}`, {
+    axios.put(`http://192.168.1.5:3009/api/todos/${todoItem.id}`, {
       title: this.state.titleInput,
       description: this.state.descriptionInput,
       done: !!todoItems.switched
@@ -163,7 +201,7 @@ export default class App extends React.Component {
     const { todoItems } = this.state;
     const todoItem = todoItems[this.state.editId];
 
-    axios.post(`http://192.168.43.117:3009/api/todos/${this.state.editId}`, {
+    axios.post(`http://192.168.1.5:3009/api/todos/${this.state.editId}`, {
       id: this.state.editId
     })
       .then(response => {
@@ -189,7 +227,7 @@ export default class App extends React.Component {
       done: this.state.switched
     };
 
-    axios.post('http://192.168.43.117:3009/api/todos/', payload)
+    axios.post('http://192.168.1.5:3009/api/todos/', payload)
       .then(response => {
         ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
@@ -208,7 +246,7 @@ export default class App extends React.Component {
     const todoItem = todoItems[index];
 
 
-    axios.put(`http://192.168.43.117:3009/api/todos/${todoItem.id}`, {
+    axios.put(`http://192.168.1.5:3009/api/todos/${todoItem.id}`, {
       title: todoItem.title,
       description: todoItem.description,
       done: !todoItem.switched
@@ -313,7 +351,7 @@ export default class App extends React.Component {
             <FormInput onChangeText={text => this.setState({ username: text })} value={this.state.username} />
             <FormLabel>Password:</FormLabel>
             <FormInput onChangeText={text => this.setState({ password: text })} value={this.state.password} />
-            <Button onPress={() => this.setState({ loginVisible: false })} title="Login" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
+            <Button onPress={this.handlePressLogin} title="Login" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
             <Button onPress={this.handlePressRegister} title="Register" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
           </View>
         </Modal>
@@ -323,12 +361,26 @@ export default class App extends React.Component {
           onRequestClose={() => this.setState({ modeVisible: false })}
           transparent={false}
           visible={this.state.modeVisible}>
+          <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
+          <Text style={{ textAlign: 'center' }}>{'Magpalit ng nakikitang mga Gawain'}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            <Button onPress={() => this.setState({ modeVisible: false })} title='Pansariling Gawain' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor="#009C6B" />
+            <Button onPress={() => this.setState({ modeVisible: false })} title='Ipinamahaging Gawain' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
+            <Button onPress={() => this.setState({ modeVisible: false, aboutVisible: true })} title='Tungkol sa App' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
+            <Button onPress={() => this.setState({ modeVisible: false, loginVisible: true, username: '', password: '' })} title='Sign Out' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
+          </View>
+        </Modal>
+
+        <Modal
+          animationType="fade"
+          onRequestClose={() => this.setState({ aboutVisible: fals, modeVisible: true })}
+          transparent={false}
+          visible={this.state.aboutVisible}>
           <View>
             <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
-            <Text style={{ textAlign: 'center' }}>{'Magpalit ng nakikitang mga Gawain'}</Text>
-            <Button onPress={() => this.setState({ modeVisible: false })} title='Pansariling Gawain' buttonStyle={{ marginBottom: 5, width: 150, height: 150 }} backgroundColor="#009C6B" />
-            <Button onPress={() => this.setState({ modeVisible: false })} title='Ipinamahaging Gawain' buttonStyle={{ marginBottom: 5, width: 150, height: 150 }} backgroundColor='#009C6B' />
-            <Button onPress={() => this.setState({ modeVisible: false, loginVisible: true })} title='Sign Out' buttonStyle={{ marginBottom: 5, width: 150, height: 150 }} backgroundColor='#009C6B' />
+            <Text style={{ textAlign: 'center' }}>{'Tungkol sa App'}</Text>
+            <Text style={{ marginTop: 50, marginBottom: 25, flexWrap: 'wrap' }}> Ang App na ito ay ginawa ng BSCS 4-2 Grupo ng kung sino man ang gumawa nito, wala kasi kaming group name. Bahala na. GG.</Text>
+            <Button onPress={() => this.setState({ aboutVisible: false, modeVisible: true })} title='Bumalik' buttonStyle={{ marginBottom: 5 }} backgroundColor='#009C6B' />
           </View>
         </Modal>
 
