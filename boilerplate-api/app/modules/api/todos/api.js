@@ -34,6 +34,7 @@ router.put('/:id', (req, res) => {
     });
 });
 
+// delete
 router.post('/:id', (req, res) => {
     db.query('DELETE FROM todos WHERE id=?', [req.params.id], function (err, results) {
         if (err) return res.status(400).send({ error: err.toString() });

@@ -9,5 +9,6 @@ router.get('/', (req, res) => {
 
 router.use('/users', require('../admin/users/api'));
 router.use('/todos', require('./todos/api'));
+router.use('/accounts', require('./accounts/api'));
 
 exports.api = router;

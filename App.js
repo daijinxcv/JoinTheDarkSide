@@ -24,6 +24,7 @@ export default class App extends React.Component {
     this.closeModalView = this.closeModalView.bind(this);
     this.renderRow = this.renderRow.bind(this);
     this.toggleSwitch = this.toggleSwitch.bind(this);
+    this.handlePressRegister = this.handlePressRegister.bind(this);
 
     this.state = {
       descriptionInput: '',
@@ -37,7 +38,8 @@ export default class App extends React.Component {
       titleInput: '',
       editId: null,
       mode: 'add',
-      todoItems: []
+      todoItems: [],
+      users: [],
     };
   }
 
@@ -48,7 +50,7 @@ export default class App extends React.Component {
   getTodos() {
     this.setState({ refreshing: true });
 
-    return axios.get('http://192.168.1.4:3009/api/todos/')
+    return axios.get('http://192.168.43.117:3009/api/todos/')
       .then(response => {
         const todos = response.data;
 
@@ -70,17 +72,76 @@ export default class App extends React.Component {
       });
   }
 
+  getUsers() {
+    ToastAndroid.show('Fetching masterlist...', ToastAndroid.SHORT);
+
+    return axios.get('http://192.168.43.117:3009/api/accounts/')
+      .then(response => {
+        const useracc = response.data;
+
+        this.setState({
+          users: useracc.map(function (acc) {
+            return {
+              id: acc.id,
+              username: acc.username,
+              password: acc.password,
+            };
+          })
+        });
+      })
+      .catch(err => {
+        this.setState({ users: [] });
+        ToastAndroid.show(err.toString(), ToastAndroid.SHORT);
+      });
+  }
+
+  handlePressRegister() {
+    username = this.state.username;
+    password = this.state.password;
+
+    if (username !== '' && password !== '') {
+      this.getUsers();
+
+      for (var index = 0; index < this.state.users.length; index++) {
+        var element = this.state.users[index];
+
+        if (username === element.username) {
+          ToastAndroid.show('This username already exists!', ToastAndroid.SHORT);
+          break;
+        } else {
+          axios.post(`http://192.168.43.117:3009/api/accounts/`, {
+            username: this.state.username,
+            password: this.state.password
+          })
+            .then(response => {
+              ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
+
+              this.setState({
+                loginVisible: false,
+                username: '',
+                password: '',
+                users: [],
+              }, () => {
+                this.getTodos();
+              });
+            });
+          break;
+        }
+      }
+    } else {
+      ToastAndroid.show('You must type something to log in.', ToastAndroid.SHORT);
+    }
+  }
+
   handlePressEdit() {
     const { todoItems } = this.state;
     const todoItem = todoItems[this.state.index];
 
     ToastAndroid.show(todoItem.title + " " + todoItem.description + " " + todoItem.id + " " + todoItem.done, ToastAndroid.SHORT);
 
-    axios.put(`http://192.168.1.4:3009/api/todos/${todoItem.id}`, {
+    axios.put(`http://192.168.43.117:3009/api/todos/${todoItem.id}`, {
       title: this.state.titleInput,
-      //title: todoItem.title,
       description: this.state.descriptionInput,
-      //description: todoItem.description,
       done: !!todoItems.switched
     })
       .then(response => {
@@ -102,7 +163,7 @@ export default class App extends React.Component {
     const { todoItems } = this.state;
     const todoItem = todoItems[this.state.editId];
 
-    axios.post(`http://192.168.1.4:3009/api/todos/${this.state.editId}`, {
+    axios.post(`http://192.168.43.117:3009/api/todos/${this.state.editId}`, {
       id: this.state.editId
     })
       .then(response => {
@@ -128,7 +189,7 @@ export default class App extends React.Component {
       done: this.state.switched
     };
 
-    axios.post('http://192.168.1.4:3009/api/todos/', payload)
+    axios.post('http://192.168.43.117:3009/api/todos/', payload)
       .then(response => {
         ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
@@ -147,7 +208,7 @@ export default class App extends React.Component {
     const todoItem = todoItems[index];
 
 
-    axios.put(`http://192.168.1.4:3009/api/todos/${todoItem.id}`, {
+    axios.put(`http://192.168.43.117:3009/api/todos/${todoItem.id}`, {
       title: todoItem.title,
       description: todoItem.description,
       done: !todoItem.switched
@@ -242,18 +303,18 @@ export default class App extends React.Component {
 
         <Modal
           animationType="slide"
-          onRequestClose={() => this.setState({ loginVisible: false })}
+          onRequestClose={() => this.setState({ loginVisible: true })}
           transparent={false}
           visible={this.state.loginVisible}>
           <View>
             <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
-            <Text h4 style={{ textAlign: 'center' }}>{'Welcome to Junkie To-do List App!'}</Text>
-            <FormLabel>Email Address:</FormLabel>
-            <FormInput onChangeText={text => this.setState({ email: text })} value={this.state.email} />
-            <FormLabel>Password</FormLabel>
+            <Text h4 style={{ textAlign: 'center' }}>{'Mag log-in ka muna.'}</Text>
+            <FormLabel>Username:</FormLabel>
+            <FormInput onChangeText={text => this.setState({ username: text })} value={this.state.username} />
+            <FormLabel>Password:</FormLabel>
             <FormInput onChangeText={text => this.setState({ password: text })} value={this.state.password} />
             <Button onPress={() => this.setState({ loginVisible: false })} title="Login" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
-            <Button onPress={() => this.setState({ loginVisible: false })} title="Register" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
+            <Button onPress={this.handlePressRegister} title="Register" buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
           </View>
         </Modal>
 
@@ -265,12 +326,9 @@ export default class App extends React.Component {
           <View>
             <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
             <Text style={{ textAlign: 'center' }}>{'Magpalit ng nakikitang mga Gawain'}</Text>
-            <FormLabel>Pamagat</FormLabel>
-            <FormInput onChangeText={text => this.setState({ titleInput: text })} value={this.state.titleInput} />
-            <FormLabel>Paglalarawan</FormLabel>
-            <FormInput onChangeText={text => this.setState({ descriptionInput: text })} value={this.state.descriptionInput} />
-            <Button onPress={} buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
-            <Button onPress={() => this.setState({ modeVisible: false })} title='Isara' buttonStyle={{ marginBottom: 5 }} backgroundColor='blue' />
+            <Button onPress={() => this.setState({ modeVisible: false })} title='Pansariling Gawain' buttonStyle={{ marginBottom: 5, width: 150, height: 150 }} backgroundColor="#009C6B" />
+            <Button onPress={() => this.setState({ modeVisible: false })} title='Ipinamahaging Gawain' buttonStyle={{ marginBottom: 5, width: 150, height: 150 }} backgroundColor='#009C6B' />
+            <Button onPress={() => this.setState({ modeVisible: false, loginVisible: true })} title='Sign Out' buttonStyle={{ marginBottom: 5, width: 150, height: 150 }} backgroundColor='#009C6B' />
           </View>
         </Modal>
 
