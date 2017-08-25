@@ -1,6 +1,5 @@
-# MGA HINDI PA GINAGAWA NI MENARD. PAKI-SUMBONG NA NGA OH.
-1. <b>LOGIN/REGISTER</b>, may UI na, may code na para sa register, paki-fix na lng. Login wala pa.
-2. <b>SHARING NG TODOS</b>, paki-code.
+# NOTE
+I have no idea why you have to sometimes double tap on the login/register button for it to work. Sometimes the app will not update the list of todos after creating new account, just log-in back again.
 
 # INSTALLATION
 1. <b>Clone</b> or <b>download</b> this repository. 
