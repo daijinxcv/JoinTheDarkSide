@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
 
 // /api/todos
 router.post('/', (req, res) => {
-    db.query('INSERT INTO todos (`title`, `description`, `done`) VALUES (?, ?, false)', [req.body.title, req.body.description], (err, results, fields) => {
+    db.query('INSERT INTO todos (`title`, `description`, `done`, `createdby`, `sharedto`) VALUES (?, ?, false, ?, ?)', [req.body.title, req.body.description, req.body.user, req.body.sharedto], (err, results, fields) => {
         if (err) return res.status(400).send({ error: err.toString() });
         res.status(200).send({ message: 'Successfully added todo!' });
     });
@@ -28,7 +28,7 @@ router.get('/:id', (req, res) => {
 
 // /api/todos/:id
 router.put('/:id', (req, res) => {
-    db.query('UPDATE todos SET title=?, description=?, done=? WHERE id=?', [req.body.title, req.body.description, req.body.done, req.params.id], (err, results, fields) => {
+    db.query('UPDATE todos SET title=?, description=?, done=?, sharedto=? WHERE id=?', [req.body.title, req.body.description, req.body.done, req.body.sharedto, req.params.id], (err, results, fields) => {
         if (err) return res.status(400).send({ error: err.toString() });
         res.status(200).send({ message: 'Successfully updated item.' });
     });

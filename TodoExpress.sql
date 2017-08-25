@@ -31,7 +31,7 @@ CREATE TABLE `accounts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `email_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +40,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,'admin','testaccount'),(17,'dfert','qwer'),(18,'deza','12345'),(23,'deza1','12315'),(24,'Aries','nice');
+INSERT INTO `accounts` VALUES (1,'admin','testaccount'),(18,'deza','12345'),(24,'Aries','nice'),(25,'daijinxcv','fluxcannon'),(26,'Bambo','12345');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -56,9 +56,11 @@ CREATE TABLE `todos` (
   `title` varchar(45) DEFAULT NULL,
   `description` varchar(45) DEFAULT NULL,
   `done` tinyint(4) NOT NULL,
+  `createdby` varchar(45) NOT NULL,
+  `sharedto` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,7 +69,7 @@ CREATE TABLE `todos` (
 
 LOCK TABLES `todos` WRITE;
 /*!40000 ALTER TABLE `todos` DISABLE KEYS */;
-INSERT INTO `todos` VALUES (0,'Una','Uno',1),(1,'Pangalawa','Dos',1),(11,'124','6555',1);
+INSERT INTO `todos` VALUES (0,'Una','Uno Edit',1,'admin','Aries'),(1,'Pangalawa','Dos',1,'admin','deza'),(11,'124','6555',1,'Aries','admin'),(12,'Dagdagan nice','Bigyan Jacket',1,'false','Aries'),(13,'Dagdagan Jacket','Kuya Willie',1,'admin','deza'),(16,'Mei','overwatch',1,'admin','Aries'),(17,'Tres ni Deza','Test 123',0,'deza','admin'),(18,'Bambo\'s First Task','Nice',1,'Bambo','admin');
 /*!40000 ALTER TABLE `todos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -80,4 +82,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-25 14:53:31
+-- Dump completed on 2017-08-25 22:22:29

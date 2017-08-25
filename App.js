@@ -26,6 +26,8 @@ export default class App extends React.Component {
     this.toggleSwitch = this.toggleSwitch.bind(this);
     this.handlePressRegister = this.handlePressRegister.bind(this);
     this.handlePressLogin = this.handlePressLogin.bind(this);
+    this.handlePressSelf = this.handlePressSelf.bind(this);
+    this.handlePressShared = this.handlePressShared.bind(this);
 
     this.state = {
       descriptionInput: '',
@@ -42,6 +44,8 @@ export default class App extends React.Component {
       mode: 'add',
       todoItems: [],
       users: [],
+      workMode: 'self',
+      sharedtoInput: '',
     };
   }
 
@@ -49,10 +53,29 @@ export default class App extends React.Component {
     this.getTodos();
   }
 
+  handlePressSelf() {
+
+    this.setState({
+      modeVisible: false,
+      workMode: 'self',
+
+    });
+    this.getTodos();
+  }
+  handlePressShared() {
+
+    this.setState({
+      modeVisible: false,
+      workMode: 'shared',
+    });
+
+    this.getTodos();
+  }
+
   getTodos() {
     this.setState({ refreshing: true });
 
-    return axios.get('http://192.168.1.5:3009/api/todos/')
+    return axios.get(`http://192.168.1.5:3009/api/todos/`)
       .then(response => {
         const todos = response.data;
 
@@ -63,7 +86,9 @@ export default class App extends React.Component {
               id: todo.id,
               title: todo.title,
               description: todo.description,
-              switched: !!todo.done
+              switched: !!todo.done,
+              createdby: todo.createdby,
+              sharedto: todo.sharedto,
             };
           })
         });
@@ -124,6 +149,12 @@ export default class App extends React.Component {
         }
 
         if (index === this.state.users.length - 1) {
+
+          this.setState({
+            username: '',
+            password: '',
+          });
+
           ToastAndroid.show('No such account exists!', ToastAndroid.SHORT);
         }
       }
@@ -144,7 +175,13 @@ export default class App extends React.Component {
         var element = this.state.users[index];
 
         if (username === element.username) {
-          ToastAndroid.show('This username already exists!', ToastAndroid.SHORT);
+
+          this.setState({
+            username: '',
+            password: '',
+          });
+
+          ToastAndroid.show('This account already exists!', ToastAndroid.SHORT);
           break;
         } else {
           axios.post(`http://192.168.1.5:3009/api/accounts/`, {
@@ -175,22 +212,24 @@ export default class App extends React.Component {
     const { todoItems } = this.state;
     const todoItem = todoItems[this.state.index];
 
-    ToastAndroid.show(todoItem.title + " " + todoItem.description + " " + todoItem.id + " " + todoItem.done, ToastAndroid.SHORT);
+    //ToastAndroid.show(todoItem.title + " " + todoItem.description + " " + todoItem.id + " " + todoItem.done, ToastAndroid.SHORT);
 
     axios.put(`http://192.168.1.5:3009/api/todos/${todoItem.id}`, {
       title: this.state.titleInput,
       description: this.state.descriptionInput,
-      done: !!todoItems.switched
+      done: !!todoItems.switched,
+      sharedto: this.state.sharedtoInput,
     })
       .then(response => {
-        ToastAndroid.show(response.data.message + ": " + this.state.titleInput + " - " + this.state.editId + " - " + this.state.descriptionInput + " - " + this.state.editId + " - " + !todoItem.switched, ToastAndroid.SHORT);
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
         this.setState({
           descriptionInput: '',
           modalVisible: false,
           titleInput: '',
           editId: null,
-          mode: 'add'
+          mode: 'add',
+          sharedtoInput: '',
         }, () => {
           this.getTodos();
         });
@@ -224,7 +263,9 @@ export default class App extends React.Component {
     const payload = {
       title: this.state.titleInput,
       description: this.state.descriptionInput,
-      done: this.state.switched
+      done: this.state.switched,
+      user: username,
+      sharedto: this.state.sharedtoInput,
     };
 
     axios.post('http://192.168.1.5:3009/api/todos/', payload)
@@ -234,7 +275,8 @@ export default class App extends React.Component {
         this.setState({
           descriptionInput: '',
           modalVisible: false,
-          titleInput: ''
+          titleInput: '',
+          sharedtoInput: '',
         })
       })
       .catch(err => ToastAndroid.show(err.response.data.error, ToastAndroid.LONG))
@@ -249,17 +291,19 @@ export default class App extends React.Component {
     axios.put(`http://192.168.1.5:3009/api/todos/${todoItem.id}`, {
       title: todoItem.title,
       description: todoItem.description,
-      done: !todoItem.switched
+      done: !todoItem.switched,
+      sharedto: todoItem.sharedto,
     })
       .then(response => {
-        ToastAndroid.show(response.data.message + ": " + todoItem.title + " - " + todoItem.description + " - " + todoItem.id + " - " + !todoItem.switched, ToastAndroid.SHORT);
+        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
         this.setState({
           descriptionInput: '',
           modalVisible: false,
           titleInput: '',
           editId: null,
-          mode: 'add'
+          mode: 'add',
+          sharedtoInput: '',
         }, () => {
           this.getTodos();
         });
@@ -286,30 +330,49 @@ export default class App extends React.Component {
       descriptionInput: todo.description,
       mode: 'edit',
       editId: todo.id,
-      index: index
+      index: index,
+      sharedtoInput: todo.sharedto,
     });
     ToastAndroid.show(todo.id.toString(), ToastAndroid.SHORT);
   }
 
   renderRow({ item, index }) {
-    return (
-      <ListItem
-        style={{ backgroundColor: item.switched ? '#009C6B' : 'white' }}
-        hideChevron={true}
-        onPress={this.editTodo.bind(null, index)}
-        onSwitch={this.toggleSwitch.bind(null, index)}
-        subtitle={item.description}
-        subtitleStyle={{ color: item.switched ? 'white' : '#a3a3a3' }}
-        switched={item.switched}
-        switchButton={true}
-        title={item.title}
-        titleStyle={{ color: item.switched ? 'white' : '#000000' }}
-      />
-    );
+    if (this.state.workMode == "self" && item.createdby == this.state.username.toString()) {
+
+      return (
+        <ListItem
+          style={{ backgroundColor: item.switched ? '#009C6B' : 'white', flexWrap: 'wrap', flexDirection: 'column' }}
+          hideChevron={true}
+          onPress={this.editTodo.bind(null, index)}
+          onSwitch={this.toggleSwitch.bind(null, index)}
+          subtitle={item.description}
+          subtitleStyle={{ color: item.switched ? 'white' : '#a3a3a3', flexWrap: 'wrap', flexDirection: 'column' }}
+          switched={item.switched}
+          switchButton={true}
+          title={item.title}
+          titleStyle={{ color: item.switched ? 'white' : '#000000', flexWrap: 'wrap', flexDirection: 'column' }}
+        />
+      );
+    } else if (this.state.workMode == "shared" && item.sharedto == this.state.username.toString()) {
+      return (
+        <ListItem
+          style={{ backgroundColor: item.switched ? '#009C6B' : 'white', flexWrap: 'wrap', flexDirection: 'column' }}
+          hideChevron={true}
+          onPress={this.editTodo.bind(null, index)}
+          onSwitch={this.toggleSwitch.bind(null, index)}
+          subtitle={item.description}
+          subtitleStyle={{ color: item.switched ? 'white' : '#a3a3a3', flexWrap: 'wrap', flexDirection: 'column' }}
+          switched={item.switched}
+          switchButton={true}
+          title={item.title + " ni " + item.createdby}
+          titleStyle={{ color: item.switched ? 'white' : '#000000', flexWrap: 'wrap', flexDirection: 'column' }}
+        />
+      );
+    }
   }
 
   closeModalView() {
-    this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '' });
+    this.setState({ modalVisible: false, mode: 'add', descriptionInput: '', titleInput: '', editId: '', index: '', sharedtoInput: '', });
   }
 
   render() {
@@ -330,12 +393,15 @@ export default class App extends React.Component {
           <View>
             <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
             <Text h4 style={{ textAlign: 'center' }}>{this.state.mode === 'add' ? 'Magdagdag ng Gagawin' : 'I-edit ang Gagawin'}</Text>
-            <FormLabel>Pamagat</FormLabel>
+            <FormLabel>Pamagat:</FormLabel>
             <FormInput onChangeText={text => this.setState({ titleInput: text })} value={this.state.titleInput} />
-            <FormLabel>Paglalarawan</FormLabel>
+            <FormLabel>Paglalarawan:</FormLabel>
             <FormInput onChangeText={text => this.setState({ descriptionInput: text })} value={this.state.descriptionInput} />
+            <FormLabel>I-share kay:</FormLabel>
+            <FormInput onChangeText={text => this.setState({ sharedtoInput: text })} value={this.state.sharedtoInput} />
             <Button onPress={this.state.mode === 'add' ? this.handlePressAdd : this.handlePressEdit} title={this.state.mode === 'add' ? 'Idagdag' : 'I-save ang binago'} buttonStyle={{ marginBottom: 5 }} backgroundColor="#009C6B" />
             <Button onPress={this.state.mode === 'add' ? this.closeModalView : this.handlePressDelete} title={this.state.mode === 'add' ? 'Isara' : 'I-delete'} buttonStyle={{ marginBottom: 5 }} backgroundColor={this.state.mode === 'add' ? 'gray' : 'red'} />
+            <Button onPress={() => this.setState({ modalVisible: false })} title='Bumalik' buttonStyle={{ marginBottom: 5 }} backgroundColor='#009C6B' />
           </View>
         </Modal>
 
@@ -364,11 +430,12 @@ export default class App extends React.Component {
           <Image source={bgImg} style={{ width: 100, height: 60, alignSelf: 'center' }} />
           <Text style={{ textAlign: 'center' }}>{'Magpalit ng nakikitang mga Gawain'}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <Button onPress={() => this.setState({ modeVisible: false })} title='Pansariling Gawain' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor="#009C6B" />
-            <Button onPress={() => this.setState({ modeVisible: false })} title='Ipinamahaging Gawain' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
+            <Button onPress={this.handlePressSelf} title='Ginawang Gawain' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor="#009C6B" />
+            <Button onPress={this.handlePressShared} title='Ibinigay na Gawain' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
             <Button onPress={() => this.setState({ modeVisible: false, aboutVisible: true })} title='Tungkol sa App' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
             <Button onPress={() => this.setState({ modeVisible: false, loginVisible: true, username: '', password: '' })} title='Sign Out' buttonStyle={{ marginBottom: 30, width: 150, height: 150 }} backgroundColor='#009C6B' />
           </View>
+          <Button onPress={() => this.setState({ modeVisible: false })} title='Bumalik' buttonStyle={{ marginBottom: 5 }} backgroundColor='#009C6B' />
         </Modal>
 
         <Modal
@@ -386,7 +453,7 @@ export default class App extends React.Component {
 
         <Header
           leftComponent={{ icon: 'menu', onPress: () => this.setState({ modeVisible: true }) }}
-          centerComponent={{ text: 'Listahan ng Gagawin' }}
+          centerComponent={{ text: 'Listahan ng Gawain ni ' + this.state.username.toString() }}
           rightComponent={{ icon: 'add', onPress: () => this.setState({ modalVisible: true }) }}
         />
         <List containerStyle={{ marginTop: 50 }}>
