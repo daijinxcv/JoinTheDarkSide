@@ -1,30 +1,17 @@
-# MGA HINDI PA GINAGAWA NI MENARD.
-1. <b>DELETE</b>, wala pa talaga niyan.
-2. <b>LOGIN/REGISTER</b>, may UI na, code na lang.
-3. <b>SHARING NG TODOS</b>, db is ready, code na lang.
+# MGA HINDI PA GINAGAWA NI MENARD. PAKI-SUMBONG NA NGA OH.
+1. <b>LOGIN/REGISTER</b>, may UI na, may code na para sa register, paki-fix na lng. Login wala pa.
+2. <b>SHARING NG TODOS</b>, paki-code.
 
-# BASAHIN NIYO TALAGA TO.
-Need iyo i-setup ng maayos yung BoilerPlate (API branch) na makukuha sa https://github.com/PUP-CCIS ! Papahirapan niyo lang sarili niyo kung d niyo yan gagamitin. Also angery theme ng app, wag bida bida. Tignan niyo api.js sa boilerplate-api.
+# INSTALLATION
+1. <b>Clone</b> or <b>download</b> this repository. 
+2. Run via <b>NPM</b>. 
+3. Do not forget to run the boilerplate-api, or this will not work properly. 
+4. Do not forget to update the ip addresses in the <b>App.js</b> file.
+5. Do not forget to create the database. I have included an exported sql file for your convenience. Just make sure you have the appropriate software to run the .sql file named <b>TodoExpress.sql</b>.
 
-http://imgur.com/bMef45q <- BUKSAN NIYO YAN. GANYAN GINAWA KO.
-
-In my separate copy, the App Adds and Edits kaso yung toggle/switch hindi na pu-push sa database. Login/Authentication, Sharing ng Todos sa ibang users, at DELETE ang wala pa.
-
-# Database Guide
-Follow this STRICTLY so we can avoid compatibility issues. Use the '.env' guide posted by our professor for settings.
-Kaso bahala na kayo kung talagang susundin niyo ito. Recommended ko lang para matino tignan.
-When setting up the tables, use the name 'Todos', for the Todos, and the name 'Users' for User Authentication purposes.
-
-'Todos' Table's fields:
-t_ID : [Not sure if this should be visible] [int] - the ID of the todos.
-t_Title : [Visible in App] [Varchar(50)] - the title of the todo.
-t_Description : [Visible in App] [Varchar(255)] - the description of the todo.
-t_LastUpdated : [Visible in App] [Date] - this is updated on every update/ when the todo is firstly posted.
-t_CreatedBy : [Visible in App] [Varchar(50)] - this is where the username of the one who created the post is found.
-t_User : [Not-visible in App] [Varchar(50)] - this is just a way to make a quick (but not fast & efficient in large data) search on whose Todos owns that shit.
-
-'Users' Table's fields:
-u_name : username of the user.
-u_pass : password of the user.
-
-# End of Readme.
+# MEMBERS
+1. Christian Joy Relato
+2. John Abe Deza
+3. John Menard Casila
+4. Gilwyn Banda
+5. John Paulo De Claro
