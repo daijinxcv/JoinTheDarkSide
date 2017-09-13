@@ -8,6 +8,8 @@ I have no idea why you have to sometimes double tap on the login/register button
 4. Do not forget to update the ip addresses in the <b>App.js</b> file.
 5. Do not forget to create the database. I have included an exported sql file for your convenience. Just make sure you have the appropriate software to run the .sql file named <b>TodoExpress.sql</b>.
 
+You may have to change the IP Address used in the code (App.js) for the app to work properly. You can easily find these by searching for the keyword 'Axios' and then change the IP Address on its argument(s).
+
 # MEMBERS
 1. Christian Joy Relato
 2. John Abe Deza
